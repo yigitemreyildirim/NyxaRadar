@@ -35,8 +35,8 @@ def run_streaming_command(command):
             process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             process.kill()
-        print("\nInterrupted. Exiting.")
-        sys.exit(0)
+        print("\nCommand interrupted.")
+        return 1
 
     process.stdout.close()
     return_code = process.wait()
