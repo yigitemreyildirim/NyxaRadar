@@ -16,7 +16,8 @@ def print_main_menu():
     print("1. Nmap Automation")
     print("2. Gobuster Automation")
     print("3. Enum4linux Automation")
-    print("4. Exit")
+    print("4. DNS Enumeration")
+    print("5. Exit")
 
 
 def handle_nmap_menu():
@@ -72,6 +73,64 @@ def handle_gobuster_menu():
     run_streaming_command(command)
 
 
+def build_dig_command(choice, target, nameserver=None):
+    if choice == "1":
+        return ["dig", f"@{nameserver or 'ns1.hedefsite.com'}", target, "AXFR"]
+    if choice == "2":
+        return ["dig", target, "NS"]
+    if choice == "3":
+        return ["dig", target, "MX"]
+    if choice == "4":
+        return ["dig", target, "SOA"]
+    if choice == "5":
+        return ["dig", target, "TXT"]
+    if choice == "6":
+        return ["dig", target, "ANY"]
+    if choice == "7":
+        return None
+    return None
+
+
+def handle_dns_menu():
+    while True:
+        print_header("DNS Enumeration")
+        print("1. AXFR transfer")
+        print("2. NS records")
+        print("3. MX records")
+        print("4. SOA records")
+        print("5. TXT records")
+        print("6. ANY records")
+        print("7. Custom dig query")
+        print("8. Back")
+        choice = input("Select an option: ").strip()
+
+        if choice == "8":
+            return
+
+        target = input("Enter target domain: ").strip()
+        if not target:
+            print("Target domain is required.")
+            continue
+
+        if choice == "1":
+            nameserver = input("Enter nameserver (default: ns1.hedefsite.com): ").strip() or "ns1.hedefsite.com"
+            command = build_dig_command(choice, target, nameserver)
+        elif choice == "7":
+            custom_options = input("Enter custom dig options: ").strip()
+            if not custom_options:
+                print("Custom dig options cannot be empty.")
+                continue
+            command = ["dig"] + shlex.split(custom_options) + [target]
+        else:
+            command = build_dig_command(choice, target)
+
+        if command is None:
+            print("Invalid option.")
+            continue
+
+        run_streaming_command(command)
+
+
 def handle_enum4linux_menu():
     print_header("Enum4linux Enumeration")
     target_ip = input("Enter target IP: ").strip()
@@ -100,6 +159,8 @@ def main_loop():
         elif choice == "3":
             handle_enum4linux_menu()
         elif choice == "4":
+            handle_dns_menu()
+        elif choice == "5":
             print("Exiting.")
             sys.exit(0)
         else:
